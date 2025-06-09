@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -17,11 +18,16 @@ public class ColaboradorService {
     private final ColaboradorRepository colaboradorRepository;
 
     @Transactional
-    public Colaborador salvar(Colaborador colaborador){
+    public Colaborador salvarComBiometria(String nome, byte[] templateCapturado){
         try {
+            Colaborador colaborador = Colaborador.builder()
+                    .nome(nome)
+                    .template(templateCapturado)
+                    .uniqueId(gerarUniqueId())
+                    .build();
             return colaboradorRepository.save(colaborador);
         }catch (DataIntegrityViolationException e){
-            throw new RuntimeException("Erro ao salvar colaborador: violação de integridade de dados", e);
+            throw new RuntimeException("Erro ao salvar colaborador com biometria: violação de integridade", e);
         }
     }
 
@@ -53,5 +59,21 @@ public class ColaboradorService {
         }
 
         return optionalColaborador;
+    }
+
+    private byte[] gerarUniqueId(){
+        byte[] uniqueId = new byte[16];
+        UUID uuid = UUID.randomUUID();
+        long high = uuid.getMostSignificantBits();
+        long low = uuid.getLeastSignificantBits();
+
+        for (int i = 7; i >= 0 ; i--) {
+            uniqueId[i] = (byte) (high & 0xFF);
+            high >>>= 8;
+            uniqueId[8 + i] = (byte) (low & 0xFF);
+            low >>>= 8;
+        }
+
+        return uniqueId;
     }
 }
