@@ -61,7 +61,7 @@ public class ColaboradorService {
         return optionalColaborador;
     }
 
-    private byte[] gerarUniqueId(){
+    public byte[] gerarUniqueId(){
         byte[] uniqueId = new byte[16];
         UUID uuid = UUID.randomUUID();
         long high = uuid.getMostSignificantBits();
